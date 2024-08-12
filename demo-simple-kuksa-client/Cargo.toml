@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-simple-kuksa-client = { path = "../simple-kuksa-client" }
+simple-kuksa-client = { path = "../../simple-kuksa-client" }
 tokio = "1.17.0"
