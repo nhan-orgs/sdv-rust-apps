@@ -20,12 +20,12 @@ You can read the `./kuksa-databroker/data/vss-core/vss_release_4.0.json` to know
 
 ### get
 * Run: `cargo run --bin demo-get`
-* Modify line 14 in `src/demo-get.rs` to test get method on other path
+* Modify line 14 in `src/bin/demo-get.rs` to test get method on other path
 
 ### publish
 * Run: `cargo run --bin demo-publish`
-* Modify line 15 by replace pair of path and value in str in `src/demo-publish.rs` to test set method on other path
+* Modify line 15 by replace pair of path and value in str in `src/bin/demo-publish.rs` to test set method on other path
 
 ### subscribe
 * Run: `cargo run --bin demo-subscribe`
-* Modify the path in line 14 in `src/demo-get.rs` to test subscribe method on other path
+* Modify the path in line 14 in `src/bin/demo-get.rs` to test subscribe method on other path
