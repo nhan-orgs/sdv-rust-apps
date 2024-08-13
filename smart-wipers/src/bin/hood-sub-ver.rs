@@ -39,60 +39,6 @@ async fn prepare(vehicle: &mut KuksaClient) {
     }
 }
 
-async fn turn_off_wipers(vehicle: &mut KuksaClient) {
-    let wiper_status = match vehicle.get_entry_data(WIPER_SIGNAL).await {
-        Ok(data_value) => common::value_from_option_datapoint(data_value),
-        Err(error) => {
-            println!("Get wipers status failed: {:?}", error);
-            return;
-        }
-    };
-
-    if wiper_status == common::Value::Bool(true) {
-        println!("[Hood manager] Hood and Wipers are open !!!");
-
-        match vehicle.publish_entry_data(WIPER_SIGNAL, "false").await {
-            Ok(_) => {
-                println!("[Hood manager] Turn off wipers!\n");
-            }
-            Err(error) => {
-                println!(
-                    "[Hood manager] Error while turning off the wipers {:?}",
-                    error
-                );
-                return;
-            }
-        }
-    }
-}
-
-async fn manage_hood_subscribe(vehicle: &mut KuksaClient) {
-    // subscribe hood
-    println!("# Subscribe hood...");
-
-    let mut hood_response_stream = match vehicle.subscribe_entry(HOOD_SIGNAL).await {
-        Ok(hood_response_stream) => hood_response_stream,
-        Err(error) => {
-            println!("Subscribe hood failed: {:?}", error);
-            return;
-        }
-    };
-
-    loop {
-        // hood events
-        if let Ok(Some(message)) = hood_response_stream.message().await {
-            let hood_status = value_from_message(message);
-
-            if hood_status == common::Value::Bool(true) {
-                turn_off_wipers(vehicle).await;
-            }
-        } else {
-            println!("[Hood manager] Something went wrong");
-            return;
-        }
-    }
-}
-
 #[tokio::main]
 async fn main() {
     println!(">>> DEMO SMART WIPERS (SUBSCRIBE) <<<");
@@ -106,9 +52,59 @@ async fn main() {
     };
 
     // prepare
-    println!("___ Prepare...");
-    prepare(&mut vehicle).await;
+    // println!("___ Prepare...");
+    // prepare(&mut vehicle).await;
 
-    println!("___ Execute function...");
-    manage_hood_subscribe(&mut vehicle).await;
+    println!("# Subscribe hood...");
+    let mut hood_response_stream = match vehicle.subscribe_entry(HOOD_SIGNAL).await {
+        Ok(hood_response_stream) => hood_response_stream,
+        Err(error) => {
+            println!("Subscribe hood failed: {:?}", error);
+            return;
+        }
+    };
+
+    println!("# Waiting for hook event...");
+    loop {
+        match hood_response_stream.message().await {
+            Ok(Some(message)) => {
+                let hood_status = value_from_message(message);
+
+                if hood_status == common::Value::Bool(true) {
+                    let wiper_status = match vehicle.get_entry_data(WIPER_SIGNAL).await {
+                        Ok(data_value) => common::value_from_option_datapoint(data_value),
+                        Err(error) => {
+                            println!("Get wipers status failed: {:?}", error);
+                            return;
+                        }
+                    };
+
+                    if wiper_status == common::Value::Bool(true) {
+                        println!("[Hood manager] Hood and Wipers are open !!!");
+
+                        match vehicle.publish_entry_data(WIPER_SIGNAL, "false").await {
+                            Ok(_) => {
+                                println!("[Hood manager] Turn off wipers!\n");
+                            }
+                            Err(error) => {
+                                println!(
+                                    "[Hood manager] Error while turning off the wipers {:?}",
+                                    error
+                                );
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            Ok(None) => {
+                println!("[Hood manager] Server gone");
+                break;
+            }
+            Err(error) => {
+                println!("[Hood manager] Error: {:?}", error);
+                break;
+            }
+        }
+    }
 }
