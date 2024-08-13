@@ -10,6 +10,16 @@ use tokio::sync::Mutex;
 const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen";
 const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.System.IsWiping";
 
+
+fn value_from_message(message: SubscribeResponse) -> Value {
+    for entry_update in message.updates {
+        if let Some(entry) = entry_update.entry {
+            return common::value_from_option_datapoint(entry.value);
+        }
+    }
+    Value::String("not found".to_string())
+}
+
 async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
     // turn on the wiper
     match vehicle
@@ -40,15 +50,6 @@ async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
             println!("Error while turning off the hood {:?}", error);
         }
     }
-}
-
-fn value_from_message(message: SubscribeResponse) -> Value {
-    for entry_update in message.updates {
-        if let Some(entry) = entry_update.entry {
-            return common::value_from_option_datapoint(entry.value);
-        }
-    }
-    Value::String("not found".to_string())
 }
 
 async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
@@ -191,10 +192,10 @@ async fn main() {
     let hood_vehicle = Arc::clone(&vehicle);
     let wipers_vehicle = Arc::clone(&vehicle);
 
-    let handle1 = tokio::spawn(async move { manage_hood_subscribe(hood_vehicle).await });
+    let hood_handler = tokio::spawn(async move { manage_hood_subscribe(hood_vehicle).await });
 
-    let handle2 = tokio::spawn(async move { manage_wipers_subscribe(wipers_vehicle).await });
+    let wipers_handler = tokio::spawn(async move { manage_wipers_subscribe(wipers_vehicle).await });
 
-    handle1.await.unwrap();
-    handle2.await.unwrap();
+    hood_handler.await.unwrap();
+    wipers_handler.await.unwrap();
 }
