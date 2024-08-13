@@ -16,6 +16,7 @@ Function: Force the wipers off while the hood is open
 * Idea:
     * Methods: `get`, `set`, `subscribe`
     * Subscribe the hood, whenever the hood is updated, turn off the wipers if the hood and the wipers are currently open
+* Do not manage case open wipers while the hood is open
 
 ## 3. Hood and wipers subcribe version
 * Path: `smart-wipers/src/bin/subscribe-ver.rs`
