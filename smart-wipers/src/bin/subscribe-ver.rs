@@ -1,13 +1,20 @@
-use simple_kuksa_client::{KuksaClient, common::{self, Value}};
 use simple_kuksa_client::kuksa_client::SubscribeResponse;
+use simple_kuksa_client::{
+    common::{self, Value},
+    KuksaClient,
+};
+use std::sync::Arc;
 use tokio;
+use tokio::sync::Mutex;
 
 const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen";
 const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.System.IsWiping";
 
-async fn prepare(vehicle: &mut KuksaClient) {
+async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
     // turn on the wiper
     match vehicle
+        .lock()
+        .await
         .publish_entry_data(WIPER_SIGNAL, "true")
         .await
     {
@@ -21,6 +28,8 @@ async fn prepare(vehicle: &mut KuksaClient) {
 
     // turn off the hood
     match vehicle
+        .lock()
+        .await
         .publish_entry_data(HOOD_SIGNAL, "false")
         .await
     {
@@ -36,17 +45,15 @@ async fn prepare(vehicle: &mut KuksaClient) {
 fn value_from_message(message: SubscribeResponse) -> Value {
     for entry_update in message.updates {
         if let Some(entry) = entry_update.entry {
-            return  common::value_from_option_datapoint(entry.value);
+            return common::value_from_option_datapoint(entry.value);
         }
     }
     Value::String("not found".to_string())
 }
 
-async fn turn_off_wipers(vehicle: &mut KuksaClient) {
-    let wiper_status = match vehicle.get_entry_data(WIPER_SIGNAL).await {
-        Ok(data_value) => {
-            common::value_from_option_datapoint(data_value)
-        }
+async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
+    let wiper_status = match vehicle.lock().await.get_entry_data(WIPER_SIGNAL).await {
+        Ok(data_value) => common::value_from_option_datapoint(data_value),
         Err(error) => {
             println!("Get wipers status failed: {:?}", error);
             return;
@@ -54,19 +61,111 @@ async fn turn_off_wipers(vehicle: &mut KuksaClient) {
     };
 
     if wiper_status == common::Value::Bool(true) {
-        println!("Wipers are also open!");
+        println!("[Hood manager] Hood and Wipers are open !!!");
 
         match vehicle
+            .lock()
+            .await
             .publish_entry_data(WIPER_SIGNAL, "false")
             .await
         {
             Ok(_) => {
-                println!("Turn off wipers!\n");
+                println!("[Hood manager] Turn off wipers!\n");
             }
             Err(error) => {
-                println!("Error while turning off the wipers {:?}", error);
+                println!(
+                    "[Hood manager] Error while turning off the wipers {:?}",
+                    error
+                );
                 return;
             }
+        }
+    }
+}
+
+async fn check_hood_open(vehicle: &Arc<Mutex<KuksaClient>>) {
+    let hood_status = match vehicle.lock().await.get_entry_data(HOOD_SIGNAL).await {
+        Ok(data_value) => common::value_from_option_datapoint(data_value),
+        Err(error) => {
+            println!("Get hood status failed: {:?}", error);
+            return;
+        }
+    };
+
+    if hood_status == Value::Bool(true) {
+        println!("[Wipers manager] Hood and Wipers are open !!!");
+
+        match vehicle
+            .lock()
+            .await
+            .publish_entry_data(WIPER_SIGNAL, "false")
+            .await
+        {
+            Ok(_) => {
+                println!("[Wipers manager] Turn off wipers!\n");
+            }
+            Err(error) => {
+                println!(
+                    "[Wipers manager] Error while turning off the wipers {:?}",
+                    error
+                );
+                return;
+            }
+        }
+    }
+}
+
+async fn manage_hood_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
+    // subscribe hood
+    println!("# Subscribe hood...");
+
+    let mut hood_response_stream = match vehicle.lock().await.subscribe_entry(HOOD_SIGNAL).await {
+        Ok(hood_response_stream) => hood_response_stream,
+        Err(error) => {
+            println!("Subscribe hood failed: {:?}", error);
+            return;
+        }
+    };
+
+    loop {
+        // hood events
+        if let Ok(Some(message)) = hood_response_stream.message().await {
+            let hood_status = value_from_message(message);
+
+            if hood_status == common::Value::Bool(true) {
+                turn_off_wipers(&vehicle).await;
+            }
+        } else {
+            println!("[Hood manager] Something went wrong");
+            return;
+        }
+    }
+}
+
+async fn manage_wipers_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
+    // subscribe wiper
+    println!("# Subscribe wipers...");
+
+    let mut wipers_response_stream = match vehicle.lock().await.subscribe_entry(WIPER_SIGNAL).await
+    {
+        Ok(wipers_response_stream) => wipers_response_stream,
+        Err(error) => {
+            println!("Subscribe wipers failed: {:?}", error);
+            return;
+        }
+    };
+
+    loop {
+        // wipers events
+        if let Ok(Some(message)) = wipers_response_stream.message().await {
+            let wipers_status = value_from_message(message);
+
+            if wipers_status == common::Value::Bool(true) {
+                check_hood_open(&vehicle).await;
+            }
+        } else {
+            println!("[Wipers manager] Something went wrong");
+            return;
         }
     }
 }
@@ -76,43 +175,26 @@ async fn main() {
     println!(">>> DEMO SMART WIPERS (SUBSCRIBE) <<<");
 
     // connect to kuksa client
-    let mut vehicle = KuksaClient::new("http://127.0.0.1:55555");
+    let vehicle = Arc::new(Mutex::new(KuksaClient::new("http://127.0.0.1:55555")));
 
-    if let Err(error) = vehicle.connect().await {
+    if let Err(error) = vehicle.lock().await.connect().await {
         println!("{:?}", error);
         return;
-    }
+    };
 
     // prepare
     println!("___ Prepare...");
-    prepare(&mut vehicle).await;
+    prepare(&vehicle).await;
 
-    // subscribe hood
-    println!("___ Subscribe hood...");
-
-    let mut response_stream = match vehicle.subscribe_entry(HOOD_SIGNAL).await {
-        Ok(response_stream) => response_stream,
-        Err(error) => {
-            println!("Subscribe failed: {:?}", error);
-            return;
-        }
-    };
-
-    // waiting for hood open
     println!("___ Execute function...");
 
-    loop {
-        if let Ok(Some(message)) = response_stream.message().await {
-            let hood_status = value_from_message(message);
-            
-            if hood_status == common::Value::Bool(true) {
-                println!("Hood is opening");
-    
-                turn_off_wipers(&mut vehicle).await;
-            }
-        } else {
-            println!("[Hood subscribe] Something went wrong");
-            return;
-        }
-    }
+    let hood_vehicle = Arc::clone(&vehicle);
+    let wipers_vehicle = Arc::clone(&vehicle);
+
+    let handle1 = tokio::spawn(async move { manage_hood_subscribe(hood_vehicle).await });
+
+    let handle2 = tokio::spawn(async move { manage_wipers_subscribe(wipers_vehicle).await });
+
+    handle1.await.unwrap();
+    handle2.await.unwrap();
 }
