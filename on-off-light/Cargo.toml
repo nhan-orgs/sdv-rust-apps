@@ -1,5 +1,5 @@
 [package]
-name = "smart-wipers"
+name = "on-off-light"
 version = "0.1.0"
 edition = "2021"
 

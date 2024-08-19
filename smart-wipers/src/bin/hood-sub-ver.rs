@@ -19,7 +19,7 @@ fn value_from_message(message: SubscribeResponse) -> Value {
 
 async fn prepare(vehicle: &mut KuksaClient) {
     // turn on the wipers
-    match vehicle.publish_entry_data(WIPER_SIGNAL, "true").await {
+    match vehicle.set_target_value(WIPER_SIGNAL, "true").await {
         Ok(_) => {
             println!("Turn on wipers!");
         }
@@ -29,7 +29,7 @@ async fn prepare(vehicle: &mut KuksaClient) {
     }
 
     // turn off the hood
-    match vehicle.publish_entry_data(HOOD_SIGNAL, "false").await {
+    match vehicle.set_target_value(HOOD_SIGNAL, "false").await {
         Ok(_) => {
             println!("Turn off hood!");
         }
@@ -56,7 +56,7 @@ async fn main() {
     // prepare(&mut vehicle).await;
 
     println!("# Subscribe hood...");
-    let mut hood_response_stream = match vehicle.subscribe_entry(HOOD_SIGNAL).await {
+    let mut hood_response_stream = match vehicle.subscribe_current_value(HOOD_SIGNAL).await {
         Ok(hood_response_stream) => hood_response_stream,
         Err(error) => {
             println!("Subscribe hood failed: {:?}", error);
@@ -71,7 +71,7 @@ async fn main() {
                 let hood_status = value_from_message(message);
 
                 if hood_status == common::Value::Bool(true) {
-                    let wiper_status = match vehicle.get_entry_data(WIPER_SIGNAL).await {
+                    let wiper_status = match vehicle.get_current_value(WIPER_SIGNAL).await {
                         Ok(data_value) => common::value_from_option_datapoint(data_value),
                         Err(error) => {
                             println!("Get wipers status failed: {:?}", error);
@@ -82,7 +82,7 @@ async fn main() {
                     if wiper_status == common::Value::Bool(true) {
                         println!("[Hood manager] Hood and Wipers are open !!!");
 
-                        match vehicle.publish_entry_data(WIPER_SIGNAL, "false").await {
+                        match vehicle.set_target_value(WIPER_SIGNAL, "false").await {
                             Ok(_) => {
                                 println!("[Hood manager] Turn off wipers!\n");
                             }

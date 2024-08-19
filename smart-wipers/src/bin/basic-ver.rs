@@ -8,7 +8,7 @@ const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.System.IsWiping
 async fn prepare(vehicle: &mut KuksaClient) {
     // turn on the wiper
     match vehicle
-        .publish_entry_data(WIPER_SIGNAL, "true")
+        .set_target_value(WIPER_SIGNAL, "true")
         .await
     {
         Ok(_) => {
@@ -21,7 +21,7 @@ async fn prepare(vehicle: &mut KuksaClient) {
 
     // turn off the hood
     match vehicle
-        .publish_entry_data(HOOD_SIGNAL, "false")
+        .set_target_value(HOOD_SIGNAL, "false")
         .await
     {
         Ok(_) => {
@@ -53,7 +53,7 @@ async fn main() {
     println!("___ Execute function...");
 
     loop {
-        let hood_cur_status = match vehicle.get_entry_data(HOOD_SIGNAL).await {
+        let hood_cur_status = match vehicle.get_current_value(HOOD_SIGNAL).await {
             Ok(data_value) => {
                 common::value_from_option_datapoint(data_value)
             }
@@ -66,7 +66,7 @@ async fn main() {
         if hood_cur_status == common::Value::Bool(true) {
             println!("Hood is opening");
 
-            let wiper_status = match vehicle.get_entry_data(WIPER_SIGNAL).await {
+            let wiper_status = match vehicle.get_current_value(WIPER_SIGNAL).await {
                 Ok(data_value) => {
                     common::value_from_option_datapoint(data_value)
                 }
@@ -80,7 +80,7 @@ async fn main() {
                 println!("Wipers are also open!");
 
                 match vehicle
-                    .publish_entry_data(WIPER_SIGNAL, "false")
+                    .set_target_value(WIPER_SIGNAL, "false")
                     .await
                 {
                     Ok(_) => {

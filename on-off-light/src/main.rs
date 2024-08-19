@@ -2,8 +2,8 @@ use simple_kuksa_client::KuksaClient;
 use tokio;
 use std::{thread::sleep, time::Duration};
 
-// const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.Beam.Low.IsOn";
-const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.IsLowBeamOn";
+// const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.Beam.Low.IsOn"; // 4.0 signal
+const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.IsLowBeamOn"; // 3.0 signal
 
 #[tokio::main]
 async fn main() {

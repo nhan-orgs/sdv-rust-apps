@@ -12,7 +12,7 @@ This project is used for unit test the library `simple-kuksa-client` in Rust
 * In `Cargo.toml`, replace the path of library
     ```
     [dependencies]
-    simple-kuksa-client = { path = "../../simple-kuksa-client" }
+    simple-kuksa-client = { path = "../../sdv-rust-lib" }
     ```
 
 ## How to run

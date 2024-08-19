@@ -25,7 +25,7 @@ async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
     match vehicle
         .lock()
         .await
-        .publish_entry_data(WIPER_SIGNAL, "true")
+        .set_target_value(WIPER_SIGNAL, "true")
         .await
     {
         Ok(_) => {
@@ -40,7 +40,7 @@ async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
     match vehicle
         .lock()
         .await
-        .publish_entry_data(HOOD_SIGNAL, "false")
+        .set_target_value(HOOD_SIGNAL, "false")
         .await
     {
         Ok(_) => {
@@ -53,7 +53,7 @@ async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
 }
 
 async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
-    let wiper_status = match vehicle.lock().await.get_entry_data(WIPER_SIGNAL).await {
+    let wiper_status = match vehicle.lock().await.get_current_value(WIPER_SIGNAL).await {
         Ok(data_value) => common::value_from_option_datapoint(data_value),
         Err(error) => {
             println!("Get wipers status failed: {:?}", error);
@@ -67,7 +67,7 @@ async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
         match vehicle
             .lock()
             .await
-            .publish_entry_data(WIPER_SIGNAL, "false")
+            .set_target_value(WIPER_SIGNAL, "false")
             .await
         {
             Ok(_) => {
@@ -85,7 +85,7 @@ async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
 }
 
 async fn check_hood_open(vehicle: &Arc<Mutex<KuksaClient>>) {
-    let hood_status = match vehicle.lock().await.get_entry_data(HOOD_SIGNAL).await {
+    let hood_status = match vehicle.lock().await.get_current_value(HOOD_SIGNAL).await {
         Ok(data_value) => common::value_from_option_datapoint(data_value),
         Err(error) => {
             println!("Get hood status failed: {:?}", error);
@@ -99,7 +99,7 @@ async fn check_hood_open(vehicle: &Arc<Mutex<KuksaClient>>) {
         match vehicle
             .lock()
             .await
-            .publish_entry_data(WIPER_SIGNAL, "false")
+            .set_target_value(WIPER_SIGNAL, "false")
             .await
         {
             Ok(_) => {
@@ -120,7 +120,7 @@ async fn manage_hood_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
     // subscribe hood
     println!("# Subscribe hood...");
 
-    let mut hood_response_stream = match vehicle.lock().await.subscribe_entry(HOOD_SIGNAL).await {
+    let mut hood_response_stream = match vehicle.lock().await.subscribe_current_value(HOOD_SIGNAL).await {
         Ok(hood_response_stream) => hood_response_stream,
         Err(error) => {
             println!("Subscribe hood failed: {:?}", error);
@@ -147,7 +147,7 @@ async fn manage_wipers_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
     // subscribe wiper
     println!("# Subscribe wipers...");
 
-    let mut wipers_response_stream = match vehicle.lock().await.subscribe_entry(WIPER_SIGNAL).await
+    let mut wipers_response_stream = match vehicle.lock().await.subscribe_current_value(WIPER_SIGNAL).await
     {
         Ok(wipers_response_stream) => wipers_response_stream,
         Err(error) => {

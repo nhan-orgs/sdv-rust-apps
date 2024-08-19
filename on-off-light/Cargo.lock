@@ -624,6 +624,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "on-off-light"
+version = "0.1.0"
+dependencies = [
+ "simple-kuksa-client",
+ "tokio",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1007,14 +1015,6 @@ dependencies = [
  "once_cell",
  "rustix",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "test-dream-kit"
-version = "0.1.0"
-dependencies = [
- "simple-kuksa-client",
- "tokio",
 ]
 
 [[package]]
