@@ -1,3 +1,7 @@
-demo-simple-kuksa-client/target
+test-methods/target
 smart-wipers/target
-on-off-light/target
+auto-blink/target
+
+test-methods/.vssclient_history
+smart-wipers/.vssclient_history
+auto-blink/.vssclient_history

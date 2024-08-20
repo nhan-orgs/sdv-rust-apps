@@ -1,6 +1,6 @@
 use simple_kuksa_client::KuksaClient;
-use tokio;
 use std::{thread::sleep, time::Duration};
+use tokio;
 
 // const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.Beam.Low.IsOn"; // 4.0 signal
 const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.IsLowBeamOn"; // 3.0 signal
@@ -20,10 +20,7 @@ async fn main() {
         println!("On = {}", on);
 
         if on {
-            match vehicle
-                .set_target_value(LIGHT_SIGNAL, "true")
-                .await
-            {
+            match vehicle.set_target_value(LIGHT_SIGNAL, "true").await {
                 Ok(_) => {
                     println!("LIGHT_SIGNAL on!");
                 }
@@ -32,10 +29,7 @@ async fn main() {
                 }
             }
         } else {
-            match vehicle
-                .set_target_value(LIGHT_SIGNAL, "false")
-                .await
-            {
+            match vehicle.set_target_value(LIGHT_SIGNAL, "false").await {
                 Ok(_) => {
                     println!("LIGHT_SIGNAL off!");
                 }
