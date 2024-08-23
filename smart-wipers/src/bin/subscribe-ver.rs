@@ -10,7 +10,6 @@ use tokio::sync::Mutex;
 const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen";
 const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.System.IsWiping";
 
-
 fn value_from_message(message: SubscribeResponse) -> Value {
     for entry_update in message.updates {
         if let Some(entry) = entry_update.entry {
@@ -120,7 +119,12 @@ async fn manage_hood_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
     // subscribe hood
     println!("# Subscribe hood...");
 
-    let mut hood_response_stream = match vehicle.lock().await.subscribe_current_value(HOOD_SIGNAL).await {
+    let mut hood_response_stream = match vehicle
+        .lock()
+        .await
+        .subscribe_current_value(HOOD_SIGNAL)
+        .await
+    {
         Ok(hood_response_stream) => hood_response_stream,
         Err(error) => {
             println!("Subscribe hood failed: {:?}", error);
@@ -132,6 +136,8 @@ async fn manage_hood_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
         // hood events
         if let Ok(Some(message)) = hood_response_stream.message().await {
             let hood_status = value_from_message(message);
+
+            println!("hood = {:?}", hood_status);
 
             if hood_status == common::Value::Bool(true) {
                 turn_off_wipers(&vehicle).await;
@@ -147,7 +153,11 @@ async fn manage_wipers_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
     // subscribe wiper
     println!("# Subscribe wipers...");
 
-    let mut wipers_response_stream = match vehicle.lock().await.subscribe_current_value(WIPER_SIGNAL).await
+    let mut wipers_response_stream = match vehicle
+        .lock()
+        .await
+        .subscribe_current_value(WIPER_SIGNAL)
+        .await
     {
         Ok(wipers_response_stream) => wipers_response_stream,
         Err(error) => {
@@ -160,6 +170,8 @@ async fn manage_wipers_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
         // wipers events
         if let Ok(Some(message)) = wipers_response_stream.message().await {
             let wipers_status = value_from_message(message);
+
+            println!("wipers = {:?}", wipers_status);
 
             if wipers_status == common::Value::Bool(true) {
                 check_hood_open(&vehicle).await;
@@ -196,6 +208,8 @@ async fn main() {
 
     let wipers_handler = tokio::spawn(async move { manage_wipers_subscribe(wipers_vehicle).await });
 
-    hood_handler.await.unwrap();
-    wipers_handler.await.unwrap();
+    // hood_handler.await.unwrap();
+    // wipers_handler.await.unwrap();
+
+    let _ = tokio::join!(hood_handler, wipers_handler);
 }
