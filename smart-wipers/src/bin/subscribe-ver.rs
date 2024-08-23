@@ -8,7 +8,7 @@ use tokio;
 use tokio::sync::Mutex;
 
 const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen";
-const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.System.IsWiping";
+const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.Mode";
 
 fn value_from_message(message: SubscribeResponse) -> Value {
     for entry_update in message.updates {
@@ -24,7 +24,7 @@ async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
     match vehicle
         .lock()
         .await
-        .set_target_value(WIPER_SIGNAL, "true")
+        .set_target_value(WIPER_SIGNAL, "MEDIUM")
         .await
     {
         Ok(_) => {
@@ -66,7 +66,7 @@ async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
         match vehicle
             .lock()
             .await
-            .set_target_value(WIPER_SIGNAL, "false")
+            .set_target_value(WIPER_SIGNAL, "OFF")
             .await
         {
             Ok(_) => {
@@ -98,7 +98,7 @@ async fn check_hood_open(vehicle: &Arc<Mutex<KuksaClient>>) {
         match vehicle
             .lock()
             .await
-            .set_target_value(WIPER_SIGNAL, "false")
+            .set_target_value(WIPER_SIGNAL, "OFF")
             .await
         {
             Ok(_) => {

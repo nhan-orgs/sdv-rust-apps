@@ -2,13 +2,13 @@ use simple_kuksa_client::{KuksaClient, common};
 use std::{thread::sleep, time::Duration};
 use tokio;
 
-const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen";
-const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.System.IsWiping";
+const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen"; // actuartor
+const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.Mode"; // sensor
 
 async fn prepare(vehicle: &mut KuksaClient) {
     // turn on the wiper
     match vehicle
-        .set_target_value(WIPER_SIGNAL, "true")
+        .set_target_value(WIPER_SIGNAL, "MEDIUM")
         .await
     {
         Ok(_) => {
@@ -80,7 +80,7 @@ async fn main() {
                 println!("Wipers are also open!");
 
                 match vehicle
-                    .set_target_value(WIPER_SIGNAL, "false")
+                    .set_target_value(WIPER_SIGNAL, "OFF")
                     .await
                 {
                     Ok(_) => {

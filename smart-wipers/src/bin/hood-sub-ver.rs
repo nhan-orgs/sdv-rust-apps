@@ -6,7 +6,7 @@ use simple_kuksa_client::{
 use tokio;
 
 const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen";
-const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.System.IsWiping";
+const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.Mode";
 
 fn value_from_message(message: SubscribeResponse) -> Value {
     for entry_update in message.updates {
@@ -19,7 +19,7 @@ fn value_from_message(message: SubscribeResponse) -> Value {
 
 async fn prepare(vehicle: &mut KuksaClient) {
     // turn on the wipers
-    match vehicle.set_target_value(WIPER_SIGNAL, "true").await {
+    match vehicle.set_target_value(WIPER_SIGNAL, "MEDIUM").await {
         Ok(_) => {
             println!("Turn on wipers!");
         }
@@ -82,7 +82,7 @@ async fn main() {
                     if wiper_status == common::Value::Bool(true) {
                         println!("[Hood manager] Hood and Wipers are open !!!");
 
-                        match vehicle.set_target_value(WIPER_SIGNAL, "false").await {
+                        match vehicle.set_target_value(WIPER_SIGNAL, "OFF").await {
                             Ok(_) => {
                                 println!("[Hood manager] Turn off wipers!\n");
                             }
