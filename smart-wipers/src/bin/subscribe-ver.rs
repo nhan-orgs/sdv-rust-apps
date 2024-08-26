@@ -10,13 +10,13 @@ use tokio::sync::Mutex;
 const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen";
 const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.Mode";
 
-fn value_from_message(message: SubscribeResponse) -> Value {
+fn value_from_message(message: SubscribeResponse) -> Option<Value> {
     for entry_update in message.updates {
         if let Some(entry) = entry_update.entry {
-            return common::value_from_option_datapoint(entry.value);
+            return common::value_from_datapoint(entry.value);
         }
     }
-    Value::String("not found".to_string())
+    return None;
 }
 
 async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
@@ -53,14 +53,14 @@ async fn prepare(vehicle: &Arc<Mutex<KuksaClient>>) {
 
 async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
     let wiper_status = match vehicle.lock().await.get_current_value(WIPER_SIGNAL).await {
-        Ok(data_value) => common::value_from_option_datapoint(data_value),
+        Ok(data_value) => common::value_from_datapoint(data_value),
         Err(error) => {
             println!("Get wipers status failed: {:?}", error);
             return;
         }
     };
 
-    if wiper_status == common::Value::Bool(true) {
+    if wiper_status == Some(common::Value::Bool(true)) {
         println!("[Hood manager] Hood and Wipers are open !!!");
 
         match vehicle
@@ -85,14 +85,14 @@ async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
 
 async fn check_hood_open(vehicle: &Arc<Mutex<KuksaClient>>) {
     let hood_status = match vehicle.lock().await.get_current_value(HOOD_SIGNAL).await {
-        Ok(data_value) => common::value_from_option_datapoint(data_value),
+        Ok(data_value) => common::value_from_datapoint(data_value),
         Err(error) => {
             println!("Get hood status failed: {:?}", error);
             return;
         }
     };
 
-    if hood_status == Value::Bool(true) {
+    if hood_status == Some(Value::Bool(true)) {
         println!("[Wipers manager] Hood and Wipers are open !!!");
 
         match vehicle
@@ -139,7 +139,7 @@ async fn manage_hood_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
 
             println!("hood = {:?}", hood_status);
 
-            if hood_status == common::Value::Bool(true) {
+            if hood_status == Some(common::Value::Bool(true)) {
                 turn_off_wipers(&vehicle).await;
             }
         } else {
@@ -173,7 +173,7 @@ async fn manage_wipers_subscribe(vehicle: Arc<Mutex<KuksaClient>>) {
 
             println!("wipers = {:?}", wipers_status);
 
-            if wipers_status == common::Value::Bool(true) {
+            if wipers_status == Some(common::Value::Bool(true)) {
                 check_hood_open(&vehicle).await;
             }
         } else {

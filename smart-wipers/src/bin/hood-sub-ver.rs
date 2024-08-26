@@ -8,13 +8,13 @@ use tokio;
 const HOOD_SIGNAL: &str = "Vehicle.Body.Hood.IsOpen";
 const WIPER_SIGNAL: &str = "Vehicle.Body.Windshield.Front.Wiping.Mode";
 
-fn value_from_message(message: SubscribeResponse) -> Value {
+fn value_from_message(message: SubscribeResponse) -> Option<Value> {
     for entry_update in message.updates {
         if let Some(entry) = entry_update.entry {
-            return common::value_from_option_datapoint(entry.value);
+            return common::value_from_datapoint(entry.value);
         }
     }
-    Value::String("not found".to_string())
+    return None;
 }
 
 async fn prepare(vehicle: &mut KuksaClient) {
@@ -70,16 +70,16 @@ async fn main() {
             Ok(Some(message)) => {
                 let hood_status = value_from_message(message);
 
-                if hood_status == common::Value::Bool(true) {
+                if hood_status == Some(common::Value::Bool(true)) {
                     let wiper_status = match vehicle.get_current_value(WIPER_SIGNAL).await {
-                        Ok(data_value) => common::value_from_option_datapoint(data_value),
+                        Ok(data_value) => common::value_from_datapoint(data_value),
                         Err(error) => {
                             println!("Get wipers status failed: {:?}", error);
                             return;
                         }
                     };
 
-                    if wiper_status == common::Value::Bool(true) {
+                    if wiper_status == Some(common::Value::Bool(true)) {
                         println!("[Hood manager] Hood and Wipers are open !!!");
 
                         match vehicle.set_target_value(WIPER_SIGNAL, "OFF").await {

@@ -11,7 +11,7 @@ async fn test_get_target(vehicle: &mut KuksaClient, signal: &str) {
 
     match vehicle.get_target_value(signal).await {
         Ok(value) => {
-            println!("{:?}", common::value_from_option_datapoint(value));
+            println!("{:?}", common::value_from_datapoint(value));
         }
         Err(error) => {
             println!("Error: {:?}", error);

@@ -37,7 +37,7 @@ async fn test_subscribe_target(vehicle: &mut KuksaClient, signal: &str) {
                                 println!(
                                     "{:?}: {:?}\n",
                                     entry.path,
-                                    common::value_from_option_datapoint(entry.actuator_target)
+                                    common::value_from_datapoint(entry.actuator_target)
                                 );
                             }
                         }

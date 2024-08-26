@@ -55,7 +55,7 @@ async fn main() {
     loop {
         let hood_cur_status = match vehicle.get_current_value(HOOD_SIGNAL).await {
             Ok(data_value) => {
-                common::value_from_option_datapoint(data_value)
+                common::value_from_datapoint(data_value)
             }
             Err(error) => {
                 println!("Get hood status failed: {:?}", error);
@@ -63,12 +63,12 @@ async fn main() {
             }
         };
         
-        if hood_cur_status == common::Value::Bool(true) {
+        if hood_cur_status == Some(common::Value::Bool(true)) {
             println!("Hood is opening");
 
             let wiper_status = match vehicle.get_current_value(WIPER_SIGNAL).await {
                 Ok(data_value) => {
-                    common::value_from_option_datapoint(data_value)
+                    common::value_from_datapoint(data_value)
                 }
                 Err(error) => {
                     println!("Get wipers status failed: {:?}", error);
@@ -76,7 +76,7 @@ async fn main() {
                 }
             };
 
-            if wiper_status == common::Value::Bool(true) {
+            if wiper_status == Some(common::Value::Bool(true)) {
                 println!("Wipers are also open!");
 
                 match vehicle

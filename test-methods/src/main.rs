@@ -38,7 +38,7 @@ fn main() {
     // let path = "Vehicle.ADAS.ABS.IsEnabled";
     // match vehicle.get_entry_data(path).await {
     //     Ok(data_value) => {
-    //         let value = common::value_from_option_datapoint(data_value);
+    //         let value = common::value_from_datapoint(data_value);
     //         println!("{}: {:?}", path, value);
     //     }
     //     Err(error) => {
@@ -53,7 +53,7 @@ fn main() {
     //     Ok(response) => {
     //         println!(">>> Get entries' value in paths '{:?}'\n", paths);
     //         for data_value in response {
-    //             let value = common::value_from_option_datapoint(data_value.1);
+    //             let value = common::value_from_datapoint(data_value.1);
     //             println!("{}: {:?}", data_value.0, value);
     //         }
     //     },

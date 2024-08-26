@@ -72,13 +72,13 @@ enum Command {
     },
 }
 
-fn value_from_message(message: SubscribeResponse) -> Value {
+fn value_from_message(message: SubscribeResponse) -> Option<Value> {
     for entry_update in message.updates {
         if let Some(entry) = entry_update.entry {
-            return common::value_from_option_datapoint(entry.value);
+            return common::value_from_datapoint(entry.value);
         }
     }
-    Value::String("not found".to_string())
+    return None;
 }
 
 async fn is_safe_condition(tx: &mpsc::Sender<Command>) -> bool {
@@ -328,7 +328,7 @@ async fn main() {
                     println!("\n___ Seatbelt update: {:?}", value);
 
                     let _ = seatbelt_tx
-                        .send(Command::SetIsBelted { value: Some(value) })
+                        .send(Command::SetIsBelted { value: value })
                         .await;
 
                     check_alert(&seatbelt_tx).await;
@@ -372,7 +372,7 @@ async fn main() {
                     println!("\n___ Speed update: {:?}", value);
 
                     let _ = speed_tx
-                        .send(Command::SetSpeed { value: Some(value) })
+                        .send(Command::SetSpeed { value: value })
                         .await;
 
                     check_alert(&speed_tx).await;
