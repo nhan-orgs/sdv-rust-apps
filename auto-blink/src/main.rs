@@ -2,44 +2,32 @@ use simple_kuksa_client::KuksaClient;
 use std::{thread::sleep, time::Duration};
 use tokio;
 
+const SERVER_ADDRESS: &str = "http://127.0.0.1:55555";
+const DELAY_TIME: u64 = 1000;
+
 // const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.Beam.Low.IsOn"; // 4.0 signal
 const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.IsLowBeamOn"; // 3.0 signal
 
 #[tokio::main]
 async fn main() {
-    let mut vehicle = KuksaClient::new("http://127.0.0.1:55555");
+    let mut vehicle = KuksaClient::new(SERVER_ADDRESS);
 
     if let Err(error) = vehicle.connect().await {
         println!("{:?}", error);
         return;
     }
 
-    let mut on = true;
+    let mut light_value = true;
 
     loop {
-        println!("On = {}", on);
+        light_value = !light_value;
 
-        if on {
-            match vehicle.set_target_value(LIGHT_SIGNAL, "true").await {
-                Ok(_) => {
-                    println!("LIGHT_SIGNAL on!");
-                }
-                Err(error) => {
-                    println!("Error while turning on LIGHT_SIGNAL: {:?}", error);
-                }
-            }
-        } else {
-            match vehicle.set_target_value(LIGHT_SIGNAL, "false").await {
-                Ok(_) => {
-                    println!("LIGHT_SIGNAL off!");
-                }
-                Err(error) => {
-                    println!("Error while turning off LIGHT_SIGNAL: {:?}", error);
-                }
-            }
-        }
+        let str_light_value: &str = if light_value { "true" } else { "false" };
 
-        sleep(Duration::from_millis(1000));
-        on = !on;
+        let _ = vehicle
+            .set_target_value(LIGHT_SIGNAL, str_light_value)
+            .await;
+
+        sleep(Duration::from_millis(DELAY_TIME));
     }
 }

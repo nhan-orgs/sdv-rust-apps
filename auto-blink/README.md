@@ -5,9 +5,9 @@
 * Method: `set_target_value`
 
 ## How to run
-* uncomment line 6 and comment line 5 to use signal 3.0
-* uncomment line 5 and comment line 6 to use signal 4.0
 ```
 cd ./auto-blink
 cargo run
 ```
+* Choose the correct version of VSS signal by uncommenting coresponding `LIGHT_SIGNAL` (line 8 or 9)
+* Ignore the error of `set_target_value` because this is the simplest version code - only use for understanding the idea of the application and Rust syntax for beginner.
