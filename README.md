@@ -12,4 +12,4 @@
     [dependencies]
     simple-kuksa-client = { path = "../../sdv-rust-lib" }
     ```
-* You can read the `./kuksa-databroker/data/vss-core/vss_release_3.0.json` to know valid paths
+* You can read the `./kuksa-databroker/data/vss-core/vss_release_3.0.json` to know valid signals
