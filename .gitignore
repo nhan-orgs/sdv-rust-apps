@@ -2,8 +2,10 @@ test-methods/target
 smart-wipers/target
 auto-blink/target
 secure-seat/target
+sample-compile/target
 
 test-methods/.vssclient_history
 smart-wipers/.vssclient_history
 auto-blink/.vssclient_history
 secure-seat/.vssclient_history
+sample-compile/.vssclient_history
