@@ -13,3 +13,19 @@
     simple-kuksa-client = { path = "../../sdv-rust-lib" }
     ```
 * You can read the `./kuksa-databroker/data/vss-core/vss_release_3.0.json` to know valid signals
+
+## Build app with Docker
+
+```
+docker run --rm -v /path/to/main.rs:/app/input/main.rs -v /path/to/output:/app/output/ boschvn/sdv-rust-builder:latest
+```
+
+You can also built and use the image locally:
+
+```
+docker build -t sdv-rust-builder .
+
+docker run --rm -v /path/to/main.rs:/app/input/main.rs -v /path/to/output:/app/output/ sdv-rust-builder:latest
+```
+
+> Note: Only the libs specified in `Cargo.toml` at the root of this project will be installed during build and run time.
