@@ -17,8 +17,10 @@
 ## Build app with Docker
 
 ```
-docker run --rm -v /path/to/main.rs:/app/input/main.rs -v /path/to/output:/app/output/ boschvn/sdv-rust-builder:latest
+docker run --rm -e APP_NAME="your-app-name" -v /path/to/main.rs:/app/input/main.rs -v /path/to/output:/app/output/ boschvn/sdv-rust-builder:latest
 ```
+
+> Note: If $APP_NAME is not specified, the default name will be "sdv-rust-app".
 
 You can also built and use the image locally:
 
