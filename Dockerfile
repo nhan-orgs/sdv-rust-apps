@@ -22,7 +22,8 @@ RUN cargo chef cook --release --recipe-path recipe.json
 FROM rust:1.81-slim-bookworm
 WORKDIR /sdv-rust-app
 
-RUN mkdir output \
+RUN apt-get install g++ \
+    && mkdir output \
     && cargo init /sdv-rust-app
 
 COPY --from=lib /sdv-rust-lib ./sdv-rust-lib
