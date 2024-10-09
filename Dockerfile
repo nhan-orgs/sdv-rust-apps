@@ -1,4 +1,3 @@
-
 FROM boschvn/sdv-rust-lib:latest AS lib
 
 FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
