@@ -2,6 +2,6 @@
 
 APP_NAME=${APP_NAME:-"sdv-rust-app"}
 
-cp /app/input/main.rs /$APP_NAME/src/main.rs
-cargo build --release 
-mv target/release/${APP_NAME} /app/output/
+cp /app/input/main.rs /sdv-rust-app/src/main.rs
+cargo build
+mv target/debug/sdv-rust-app /app/output/${APP_NAME}
