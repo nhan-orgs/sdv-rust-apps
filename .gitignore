@@ -10,5 +10,9 @@ auto-blink/.vssclient_history
 secure-seat/.vssclient_history
 sample-compile/.vssclient_history
 
+hello-rust/caesar-encryption/target
+hello-rust/fizz-buzz/target
+hello-rust/maximum-gap/target
+
 .vscode
 output
