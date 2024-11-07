@@ -1,9 +1,0 @@
-[package]
-name = "sdv-rust-app"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-simple-kuksa-client = { path = "./sdv-rust-lib/" }
-tokio = "1.17.0"
-tonic = { version = "0.11.0", default-features = false }
