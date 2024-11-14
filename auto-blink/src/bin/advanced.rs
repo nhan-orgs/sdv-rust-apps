@@ -1,3 +1,11 @@
+/*
+This application will switch the status of light (on/off) after every 1 second
+
+Method: `set_target_value`
+
+If the set_target_value return an error, notify and exit the program
+*/
+
 use simple_kuksa_client::KuksaClient;
 use std::{thread::sleep, time::Duration};
 use tokio;
@@ -5,8 +13,8 @@ use tokio;
 const SERVER_ADDRESS: &str = "http://127.0.0.1:55555";
 const DELAY_TIME: u64 = 1000;
 
-// const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.Beam.Low.IsOn"; // 4.0 signal
-const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.IsLowBeamOn"; // 3.0 signal
+const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.Beam.Low.IsOn"; // 4.0 signal
+// const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.IsLowBeamOn"; // 3.0 signal
 
 #[tokio::main]
 async fn main() {
