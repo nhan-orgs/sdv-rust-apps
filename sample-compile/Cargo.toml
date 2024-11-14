@@ -1,8 +1,0 @@
-[package]
-name = "sample-compile"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-simple-kuksa-client = { path = "../../sdv-rust-lib" }
-tokio = "1.17.0"
