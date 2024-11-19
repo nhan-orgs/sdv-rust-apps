@@ -1,3 +1,22 @@
+/*
+Force the wipers off while the hood is open
+
+Idea: 
++ Subscribe both the hood and the wipers;
++ Whenever the hood or the wipers are updated, 
+turn off the wipers if the hood and the wipers 
+are currently open
+
+Methods: `get_current_value`, `set_target_value`, subscribe_current_value`
+
+Vehicle.Body.Windshield.Front.Wiping.Mode:
+    value set: "OFF", "SLOW", "MEDIUM", "FAST", "INTERVAL", "RAIN_SENSOR"
+    example: Some(String("OFF"))
+
+Vehicle.Body.Hood.IsOpen:
+    value set: true, false
+*/
+
 use simple_kuksa_client::kuksa_client::SubscribeResponse;
 use simple_kuksa_client::{
     common::{self, Value},
@@ -58,7 +77,7 @@ async fn subscribe(
 async fn turn_off_wipers(vehicle: &Arc<Mutex<KuksaClient>>) {
     let wiper_status = get(vehicle, WIPER_SIGNAL).await;
 
-    if wiper_status == Some(common::Value::Bool(true)) {
+    if wiper_status != Some(common::Value::String("OFF".to_string())) {
         set(vehicle, WIPER_SIGNAL, "OFF").await;
     }
 }
