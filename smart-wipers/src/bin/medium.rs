@@ -89,8 +89,10 @@ async fn main() {
                     let wiper_status = get(&mut vehicle, WIPER_SIGNAL).await;
 
                     if wiper_status != Some(common::Value::String("OFF".to_string())) {
+                        println!("----------------------------");
                         println!("Hood and Wipers are open !!!");
-
+                        println!("Turning OFF wipers...");
+                        
                         set(&mut vehicle, WIPER_SIGNAL, "OFF").await;
                     }
                 }

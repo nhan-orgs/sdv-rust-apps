@@ -69,9 +69,6 @@ async fn main() {
 
                 println!("Turning OFF wipers...");
                 set(&mut vehicle, WIPER_SIGNAL, "OFF").await;
-
-                let wiper_status = get(&mut vehicle, WIPER_SIGNAL).await;
-                println!("Wipers status: {:?}", wiper_status);
             }
 
         }
