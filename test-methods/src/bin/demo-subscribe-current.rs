@@ -41,6 +41,8 @@ async fn test_subscribe_current(vehicle: &mut KuksaClient, signal: &str, expecte
     println!("Expected:\n\t{expected}");
     println!("Result:");
 
+    // send request to Kuksa Databroker to get the response stream
+    // which will send information about the changes of that signal
     let mut response_stream = match vehicle.subscribe_current_value(signal).await {
         Ok(response_stream) => {
             println!("Subscribe successful! Waiting for signal changes...");
@@ -52,18 +54,20 @@ async fn test_subscribe_current(vehicle: &mut KuksaClient, signal: &str, expecte
         }
     };
 
+    // this loop will be alive until the response stream closed
     loop {
+        // wait until a change occurs
         match response_stream.message().await {
             Ok(response) => {
                 match response {
+                    // The stream was closed by the sender
+                    // and no more messages will be delivered
                     None => {
-                        // The stream was closed by the sender
-                        // and no more messages will be delivered
                         println!("[None] Server gone");
                         break;
                     }
+                    // The sender streamed a valid response message val
                     Some(message) => {
-                        // The sender streamed a valid response message val
                         println!("[Message]: ");
                         for entry_update in message.updates {
                             if let Some(entry) = entry_update.entry {
@@ -77,9 +81,10 @@ async fn test_subscribe_current(vehicle: &mut KuksaClient, signal: &str, expecte
                     }
                 }
             }
+
+            // a gRPC error was sent by the sender instead of a valid response message.
+            // Refer to Status::code and Status::message to examine possible error causes.
             Err(err) => {
-                // a gRPC error was sent by the sender instead of a valid response message.
-                // Refer to Status::code and Status::message to examine possible error causes.
                 println!("[Error] {:?}", err);
             }
         }
@@ -103,9 +108,9 @@ async fn main() {
     let expected = "This is a wrong signal. Method should return errors (no entries found for the provided path).";
     test_subscribe_current(&mut vehicle, WRONG_SIGNAL, expected).await;
     
-    // let expected = "This is a branch signal. The execution will subscribe all its children!";
-    // test_subscribe_current(&mut vehicle, BRANCH_SYSTEM_SIGNAL, expected).await;
+    let expected = "This is a branch signal. The execution will subscribe all its children!";
+    test_subscribe_current(&mut vehicle, BRANCH_SYSTEM_SIGNAL, expected).await;
 
-    let expected = "This is a correct actuator signal. The execution should be successful.";
-    test_subscribe_current(&mut vehicle, ACT_POSITION_SIGNAL, expected).await;
+    // let expected = "This is a correct actuator signal. The execution should be successful.";
+    // test_subscribe_current(&mut vehicle, ACT_POSITION_SIGNAL, expected).await;
 }

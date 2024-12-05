@@ -14,7 +14,6 @@ const SERVER_ADDRESS: &str = "http://127.0.0.1:55555";
 const DELAY_TIME: u64 = 1000;
 
 const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.Beam.Low.IsOn"; // 4.0 signal
-// const LIGHT_SIGNAL: &str = "Vehicle.Body.Lights.IsLowBeamOn"; // 3.0 signal
 
 #[tokio::main]
 async fn main() {
@@ -32,6 +31,10 @@ async fn main() {
 
         let str_light_value: &str = if light_value { "true" } else { "false" };
 
+        // `set_target_value` will be executed
+        // its return value is Result<> type
+        // `if let...` will print error messages 
+        // if it can extract error from the result
         if let Err(error) = vehicle
             .set_target_value(LIGHT_SIGNAL, str_light_value)
             .await {
